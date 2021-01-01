@@ -1,0 +1,12 @@
+kubectl get pods ( to list all the pods)
+
+kubectl create -f pod.yaml (yaml file)
+kubectl delete pod nginx
+
+kubectl get pods --show-labels
+kubectl get pods -o wide  ( to show which node pod is running) 
+
+kubectl get pods --show-labels
+kubectl run nginx --image=nginx -o yaml > pod.yaml
+
+kubectl describe nodes hsmaster more
