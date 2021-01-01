@@ -1,0 +1,7 @@
+*************Create scaling pod******
+
+kubectl scale deployment my-deployment --replicas=4
+kubectl apply -f D1.yaml
+
+kubectl get all
+kubectl get rs
