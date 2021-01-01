@@ -1,0 +1,145 @@
+
+
+1) Disable Swap
+   ============
+
+sudo swapoff -a
+sudo vi /etc/fstab (put sign # at the beginning on the UUID of swap partition)
+
+2) Letting iptables see bridged traffic (br_netfilter module should be loaded)
+   ===========================================================================
+
+lsmod | grep br_netfilter
+modprobe br_netfilter
+lsmod | grep br_netfilter
+
+cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+
+sudo sysctl --system
+
+
+3) Container runtime (Docker)
+   ==========================
+
+Reference: https://v1-18.docs.kubernetes.io/docs/setup/production-environment/container-runtimes/
+---------
+
+# (Install Docker CE)
+## Set up the repository:
+### Install packages to allow apt to use a repository over HTTPS
+-----------------------------------------------------------------
+
+sudo apt-get update && sudo apt-get install -y \
+  sudo apt-transport-https ca-certificates curl software-properties-common gnupg2
+
+# Add Docker’s official GPG key:
+--------------------------------
+
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+
+# Add the Docker apt repository:
+-------------------------------
+sudo add-apt-repository \
+  "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) \
+  stable"
+
+sudo apt-cache madison docker-ce
+sudo apt-get  update
+sudo apt-cache madison docker-ce | grep 18.06
+sudo apt-cache madison docker-ce | grep 18.06.3*
+sudo apt-get install docker-ce=18.06.3~ce~3-0~ubuntu -y  <----**Note**--- if this doesnt work use the install command below
+sudo docker version
+
+**********Alternate command to download Docker****************************
+apt-get update && apt-get install -y \
+  containerd.io=1.2.13-2 \
+  docker-ce=5:19.03.11~3-0~ubuntu-$(lsb_release -cs) \
+  docker-ce-cli=5:19.03.11~3-0~ubuntu-$(lsb_release -cs)
+****************************************************
+
+# Set up the Docker daemon
+---------------------------
+
+cat > /etc/docker/daemon.json <<EOF
+{
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m"
+  },
+  "storage-driver": "overlay2"
+}
+EOF
+
+mkdir -p /etc/systemd/system/docker.service.d
+
+# Restart Docker
+----------------
+systemctl daemon-reload
+systemctl enable docker
+systemctl restart docker
+
+4) Installing kubeadm, kubelet and kubectl
+   =======================================
+
+sudo apt-get update && sudo apt-get install -y apt-transport-https curl
+sudo curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+
+cat <<EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
+deb https://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+
+sudo apt-get update
+sudo apt-cache policy kubeadm | grep 1.18
+
+
+sudo apt-get install -y kubelet=1.18.8-00 kubeadm=1.18.8-00 kubectl=1.18.8-00
+sudo apt-mark hold kubelet kubeadm kubectl
+
+Note: For latest version, use sudo apt-get install -y kubelet kubeadm kubectl 
+---- 
+
+5) Initialized time synchronization
+
+sudo timedatectl
+sudo timedatectl list-timezones | grep Karachi
+sudo timedatectl set-timezone Asia/Karachi
+shutdown now
+
+*************************************************************************
+
+***************Misc..Command****to troubleshoot network error***
+cat /etc/network/interfaces **** 
+*********************************************
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+source /etc/network/interfaces.d/*
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+# The primary network interface
+auto ens33
+iface ens33 inet static
+address XXX.XXX.XXX.XXX
+netmask 255.255.255.0
+
+
+
+*********************************
+
+
+kubeadm join XXX.XXX.XXX.XXX2:6443 --token ********     --discovery-token-ca-cert-hash sha256:58ee813e3f24029d6af2ef8c4f73200d402089c2ad61e7925e8904bd2eef39dc 
+
+kubeadm token list
+kubeadm token delete "token number" 
+kubeadm token create --print-join-command
+
+
+
