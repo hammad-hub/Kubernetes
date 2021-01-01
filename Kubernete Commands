@@ -1,0 +1,6 @@
+kubectl run --help
+
+kubectl get nodes
+kubectl cluster-info
+kubectl get pods --all-namespaces
+kubectl get clusterrole
