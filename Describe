@@ -1,0 +1,11 @@
+kubectl get nodes -o wide
+kubectl get all -o wide
+kubectl describe svc nginx-svc
+kubectl delete pod nginx
+kubectl delete svc nginx-svc
+kubectl describe svc b1-svc | grep Endpoints
+
+
+
+kubectl create deployment my-deploy --image=nginx
+kubectl scale deployment my-deploy --replicas=4
