@@ -1,0 +1,9 @@
+Create deployment In Kubernetes <----------
+
+kubectl create deployment my-deployment --image=nginx -o yaml > deploy.yaml 
+kubectl create deployment my-deploymant --image=nginx --dry-run=client -o yaml > deploy1.yaml
+kubectl get deployment.apps
+kubectl delete deployment.apps my-deployment
+kubectl create -f deploy.yaml
+kubectl get deployments.apps -o wide
+kubectl get deployments.apps,pod -o wide
