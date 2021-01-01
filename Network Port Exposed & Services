@@ -1,0 +1,11 @@
+*****Port Exposed & Services**************
+
+kubectl expose pod nginx --name=nginx-svc --port=80 --target-port=80
+kubectl get svc nginx-svc -o yaml > svc.yaml
+kubectl get svc nginx-svc -o yaml > svc.yaml
+kubectl edit svc nginx-svc
+ To edit (svc) file should export in --------export EDITOR='nano'
+ 
+kubectl edit svc nginx-svc
+kubectl describe svc nginx-svc
+kubectl expose deployment b1 --name=b1-svc --port=80 --target-port=80 --type=NodePort
