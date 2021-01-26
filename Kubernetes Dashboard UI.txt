@@ -1,0 +1,75 @@
+Kubernetes Dashboard UI
+==================================
+
+https://v1-19.docs.kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
+
+Step-1:  Install the dashboard by executing the script 
+------
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0/aio/deploy/recommended.yaml
+
+----> kubectl get ns
+----->  kubectl -n kubernetes-dashboard get all <----- metrics 
+to add a name space ( metrics , dashboard) Its a service for M and D - depoyment of service account 
+
+Step-2:
+-------
+kubectl get ns 
+  
+
+Step-3:
+  Now we need to access dashboard from our browser , so we need to expose the port , for that we need nodeport service 
+  kubectl -n kubernetes-dashboard get svc -o wide   ---- cluster ip 
+
+------
+export EDITOR='nano' 
+kubectl -n kubernetes-dashboard edit svc kubernetes-dashboard
+
+Replace type: ClusterIP >> type: NodePort
+
+Safe and exit
+
+kubectl -n kubernetes-dashboard get svc -o wide
+kubectl get nodes -o wide
+
+https://inetrnal_ip:NodePort-IP
+
+Step-4:
+
+-----------
+# check for secerete for dashboard
+-----------------------> kubectl -n kubernetes-dashboard get secrets  
+# This has service account which contain secrete 
+-----------------------> kubectl -n kubernetes-dashboard get sa   
+------
+#Describe service account Kubernete-dashboard 
+# to get the token name 
+kubectl -n kubernetes-dashboard describe sa kubernetes-dashboard | grep Token
+ 
+kubectl -n kubernetes-dashboard describe secret """""Token name"""" ?
+ 
+Step-5:
+------
+# normal users for config man 
+# user through service account 
+Info:
+------
+# Get detail about cluserrole 
+# descrive cluserrole for kubernete dashboard
+######clusterroles###########
+kubectl -n kubernetes-dashboard get clusterroles.rbac.authorization.k8s.io  | grep dashboard
+kubectl -n kubernetes-dashboard describe clusterroles.rbac.authorization.k8s.io kubernetes-dashboard
+##########clusterrolebindings######
+kubectl -n kubernetes-dashboard get clusterrolebindings.rbac.authorization.k8s.io  | grep dashboard
+kubectl -n kubernetes-dashboard describe clusterrolebindings.rbac.authorization.k8s.io kubernetes-dashboard
+------
+
+kubectl -n kubernetes-dashboard delete clusterrole kubernetes-dashboard
+kubectl -n kubernetes-dashboard delete clusterrolebinding kubernetes-dashboard
+
+kubectl -n kubernetes-dashboard create clusterrole kubernetes-dashboard --verb='*' --resource='*.*,*.apps,*.batch'
+
+----------->create a service account <----------
+
+kubectl create clusterrolebinding kubernetes-dashboard --clusterrole=kubernetes-dashboard --serviceaccount=kubernetes-dashboard:kubernetes-dashboard
+
+Follow Step-4 again for logging on Dashboard:
