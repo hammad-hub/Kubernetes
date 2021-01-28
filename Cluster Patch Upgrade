@@ -1,0 +1,113 @@
+
+
+
+![2021-01-27_19-39-07](https://user-images.githubusercontent.com/74447461/106087330-9b525a00-60d8-11eb-9f37-f86c22e9da60.jpg)
+
+Master Node Upgrade Process (Patch Version)
+--------------------------------------------
+https://v1-18.docs.kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/
+
+Step-1:
+------
+kubeadm version
+ 
+Step-2:
+-------
+sudo apt update
+
+Step-3:
+-----
+apt-cache policy kubeadm | grep 1.18
+ 
+Step-4:
+------
+sudo apt-mark unhold kubeadm kubelet kubectl && \
+      sudo apt-get update && \
+      sudo apt-get install -y kubeadm=1.18.13-00 kubelet=1.18.13-00 kubectl=1.18.13-00 && \
+      sudo apt-mark hold kubeadm kubelet kubectl
+
+Step-5:
+------
+kubeadm version
+ 
+
+Step-6:
+--------
+sudo kubectl drain kmaster --ignore-daemonsets
+
+Step-7:
+-------
+kubectl get nodes
+ 
+Step-8:
+-------
+sudo kubeadm upgrade plan
+ 
+Step-9:
+------
+sudo kubeadm upgrade apply v1.18.13
+
+Step-10:
+-------
+sudo kubectl uncordon kmaster
+
+Step-11:
+-------
+kubectl get nodes 
+
+
+Note:
+-----
+kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+then delete all weave-net pods from kube-system
+
+
+Worker Node Upgrade Process (Worker1)
+------------------------------------
+Step-1:
+------
+ssh osboxes@Worker-Node-IP
+
+Step-2:
+------
+kubeadm version
+
+Step-3:
+------
+sudo apt update
+
+Step-4:
+------
+sudo apt-cache policy kubeadm | grep 1.18
+
+Step-5:
+------
+sudo apt-mark unhold kubeadm kubelet kubectl && \
+      sudo apt-get update && \
+      sudo apt-get install -y kubeadm=1.18.13-00 kubelet=1.18.13-00 kubectl=1.18.13-00 && \
+      sudo apt-mark hold kubeadm kubelet kubectl
+
+Step-6:
+------
+sudo kubectl drain kworker1 --ignore-daemonsets (Run On Master Node)
+
+Step-7:
+------
+sudo kubeadm upgrade node
+
+Step-9:
+------
+exit from ssh session
+
+Step-10:
+-------
+sudo kubectl uncordon kworker1 (Run On Master Node) 
+
+Step-11:
+--------
+kubectl get nodes
+ 
+
+Worker Node Upgrade Process (Worker2)
+--------------------------------------
+do yourself
