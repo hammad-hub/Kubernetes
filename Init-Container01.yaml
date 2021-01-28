@@ -1,0 +1,27 @@
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+  name: init-pod
+spec:
+  volumes:
+  - name: workdir
+    emptyDir: {}
+  containers:
+  - image: alpine
+    name: alpine
+    command: ["sleep","1000"]
+    volumeMounts:
+    - mountPath: /workdir
+      name: workdir
+  initContainers:
+  - name: create
+    image: alpine
+    command: ['sh', '-c', 'touch /workdir/claim.txt']
+    volumeMounts:
+    - mountPath: /workdir
+      name: workdir
+EOF
+
+kubectl exec -it init-pod -- sh
