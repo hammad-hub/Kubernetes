@@ -1,30 +1,56 @@
 
+# download ubuntu from https://ubuntu.com/download/desktop   
+# Ubuntu 20.10 - Version used 
+
+----->    sudo apt update
+----->    apt install net-tools 
+
+
+*******Install SSH for Putty******* #FROM <https://askubuntu.com/questions/760378/can-not-install-openssh-server-on-ubuntu-16-04> 
+sudo apt install openssh-server         <------ Install SSHD 
+
+---> systemctl status sshd
+---> sudo ufw allow ssh  ----For firewall enable on port 22
 
 1) Disable Swap
+## By disabling swapping, you will also prevent memory algorithms from doing unnecessary operation - moving data from RAM to swap and vice versa - in case of SSD this will prevent excessive wear. And in any case this will improve the performance by eliminating unnecessary operations
+https://superuser.com/questions/810170/should-i-disable-swap-file-if-i-have-lots-of-ram-or-should-i-move-it-to-a-virtua#:~:text=By%20disabling%20swapping%2C%20you%20will,performance%20by%20eliminating%20unnecessary%20operations.
    ============
+--->  sudo swapoff -a
 
-sudo swapoff -a
-sudo vi /etc/fstab (put sign # at the beginning on the UUID of swap partition)
+#(put sign # at the beginning on the UUID of swap partition)
+
+----> sudo nano /etc/fstab 
+
+
 
 2) Letting iptables see bridged traffic (br_netfilter module should be loaded)
+Make sure that the br_netfilter module is loaded. This can be done by running lsmod | grep br_netfilter. To load it explicitly call sudo modprobe br_netfilter.
+As a requirement for your Linux Node's iptables to correctly see bridged traffic, you should ensure net.bridge.bridge-nf-call-iptables is set to 1 in your sysctl config, e.g.
    ===========================================================================
 
-lsmod | grep br_netfilter
-modprobe br_netfilter
-lsmod | grep br_netfilter
+---> lsmod | grep br_netfilter
+---> modprobe br_netfilter
+---> lsmod | grep br_netfilter
 
-cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+---> cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
 net.bridge.bridge-nf-call-ip6tables = 1
 net.bridge.bridge-nf-call-iptables = 1
 EOF
 
-sudo sysctl --system
+---->  sudo sysctl --system
+
+#sysctl is a software utility of some Unix-like operating systems that reads 
+#and modifies the attributes of the system kernel such as its version number, 
+#maximum limits, and security settings.
 
 
 3) Container runtime (Docker)
    ==========================
 
-Reference: https://v1-18.docs.kubernetes.io/docs/setup/production-environment/container-runtimes/
+Reference:
+# https://v1-18.docs.kubernetes.io/docs/setup/production-environment/container-runtimes/
+# https://docs.docker.com/engine/install/ubuntu/
 ---------
 
 # (Install Docker CE)
@@ -52,6 +78,7 @@ sudo apt-get  update
 sudo apt-cache madison docker-ce | grep 18.06
 sudo apt-cache madison docker-ce | grep 18.06.3*
 sudo apt-get install docker-ce=18.06.3~ce~3-0~ubuntu -y  <----**Note**--- if this doesnt work use the install command below
+
 sudo docker version
 
 **********Alternate command to download Docker****************************
@@ -106,11 +133,33 @@ Note: For latest version, use sudo apt-get install -y kubelet kubeadm kubectl
 5) Initialized time synchronization
 
 sudo timedatectl
-sudo timedatectl list-timezones | grep Karachi
-sudo timedatectl set-timezone Asia/Karachi
+
+
+sudo timedatectl list-timezones | grep " Whatever your city and state is"
+sudo timedatectl set-timezone America/Los_Angeles
 shutdown now
 
 *************************************************************************
+To initialize the control-plane node run:
+-----> sudo kubeadm init
+
+
+####- To Check if the nodes are available ##
+
+---> kubectl cluster-info
+---> kubectl get nodes
+
+*****************Integrating Kubernetes via the Addon------> Weave Net creates a virtual network*****
+
+#https://www.weave.works/docs/net/latest/kubernetes/kube-addon/
+
+Weave Net creates a virtual network that connects Docker containers across multiple hosts and enables their automatic discovery.
+With Weave Net, portable microservices-based applications consisting of multiple containers can run anywhere:
+on one host, multiple hosts or even across cloud providers and data centers.
+Applications use the network just as if the containers were all plugged into the same network switch, without having to configure port mappings, ambassadors or links.
+
+----> kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+
 
 ***************Misc..Command****to troubleshoot network error***
 cat /etc/network/interfaces **** 
@@ -125,11 +174,11 @@ auto lo
 iface lo inet loopback
 
 # The primary network interface
-auto ens33
-iface ens33 inet static
+
+auto enp0s8
+iface enp0s8 inet static
 address XXX.XXX.XXX.XXX
 netmask 255.255.255.0
-
 
 
 *********************************
