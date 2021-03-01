@@ -2,6 +2,14 @@
 # download ubuntu from https://ubuntu.com/download/desktop   
 # Ubuntu 20.10 - Version used 
 
+#Enabling SSH on Ubuntu -- > https://linuxize.com/post/how-to-enable-ssh-on-ubuntu-18-04/
+#The latest version of the Ubuntu operating system for desktop PCs and laptops  --- >https://ubuntu.com/download/desktop
+#Install Docker Engine on Ubuntu ---> https://docs.docker.com/engine/install/ubuntu/
+#Installing kubeadm ---->https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+#Creating a cluster with kubeadm --->https://v1-18.docs.kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/
+#Introducing Weave Net|Integrating Kubernetes via the Addon  --- > https://www.weave.works/docs/net/latest/kubernetes/kube-addon/
+
+
 ----->    sudo apt update
 ----->    apt install net-tools 
 
@@ -58,35 +66,38 @@ Reference:
 ### Install packages to allow apt to use a repository over HTTPS
 -----------------------------------------------------------------
 
-sudo apt-get update && sudo apt-get install -y \
-  sudo apt-transport-https ca-certificates curl software-properties-common gnupg2
+#Uninstall old versions 
+
+sudo apt-get remove docker docker-engine docker.io containerd runc
+
+#SET UP THE REPOSITORY
+-------------------------
+
+ sudo apt-get update
+
+$ sudo apt-get install \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg-agent \
+    software-properties-common
 
 # Add Docker’s official GPG key:
 --------------------------------
 
 sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
 
-# Add the Docker apt repository:
+# Add the Docker apt repository: Use the following command to set up the stable repository.
 -------------------------------
 sudo add-apt-repository \
   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
   $(lsb_release -cs) \
   stable"
 
-sudo apt-cache madison docker-ce
-sudo apt-get  update
-sudo apt-cache madison docker-ce | grep 18.06
-sudo apt-cache madison docker-ce | grep 18.06.3*
-sudo apt-get install docker-ce=18.06.3~ce~3-0~ubuntu -y  <----**Note**--- if this doesnt work use the install command below
-
-sudo docker version
-
-**********Alternate command to download Docker****************************
-apt-get update && apt-get install -y \
-  containerd.io=1.2.13-2 \
-  docker-ce=5:19.03.11~3-0~ubuntu-$(lsb_release -cs) \
-  docker-ce-cli=5:19.03.11~3-0~ubuntu-$(lsb_release -cs)
-****************************************************
+#INSTALL DOCKER ENGINE
+ ___________________
+ $ sudo apt-get update
+ $ sudo apt-get install docker-ce docker-ce-cli containerd.io
 
 # Set up the Docker daemon
 ---------------------------
@@ -109,6 +120,7 @@ mkdir -p /etc/systemd/system/docker.service.d
 systemctl daemon-reload
 systemctl enable docker
 systemctl restart docker
+systemctl status docker
 
 4) Installing kubeadm, kubelet and kubectl
    =======================================
@@ -143,7 +155,6 @@ shutdown now
 To initialize the control-plane node run:
 -----> sudo kubeadm init
 
-
 ####- To Check if the nodes are available ##
 
 ---> kubectl cluster-info
@@ -170,9 +181,6 @@ cat /etc/network/interfaces ****
 source /etc/network/interfaces.d/*
 
 # The loopback network interface
-auto lo
-iface lo inet loopback
-
 # The primary network interface
 
 auto enp0s8
@@ -183,7 +191,7 @@ netmask 255.255.255.0
 
 *********************************
 
-
+FORExample:
 kubeadm join XXX.XXX.XXX.XXX2:6443 --token ********     --discovery-token-ca-cert-hash sha256:58ee813e3f24029d6af2ef8c4f73200d402089c2ad61e7925e8904bd2eef39dc 
 
 kubeadm token list
